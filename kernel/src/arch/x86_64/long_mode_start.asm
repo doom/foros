@@ -14,6 +14,5 @@ long_mode_start:
 	mov fs, ax
 	mov gs, ax
 
-	mov byte [0xb8000], 0x4f
-	mov byte [0xb8002], 0x4b
+	call kmain
 	hlt

@@ -1,0 +1,3 @@
+[submodule "lib/for_libcxx"]
+	path = lib/for_libcxx
+	url = git@github.com:/doom/for_libcxx
