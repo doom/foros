@@ -1,3 +1,6 @@
 [submodule "lib/for_libcxx"]
 	path = lib/for_libcxx
 	url = git@github.com:/doom/for_libcxx
+[submodule "lib/strong_type"]
+	path = lib/strong_type
+	url = git@github.com:/doom/strong_type

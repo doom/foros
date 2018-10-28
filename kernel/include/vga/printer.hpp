@@ -14,7 +14,7 @@ namespace foros::vga
         class printer
         {
         public:
-            printer(unsigned int x, unsigned int y) noexcept : _x(x), _y(y)
+            printer(vga::x x, vga::y y) noexcept : _x(x), _y(y)
             {
             }
 
@@ -22,24 +22,24 @@ namespace foros::vga
             {
                 switch (c) {
                     case '\n':
-                        _x = 0;
+                        _x.value() = 0;
                         ++_y;
                         break;
                     case '\r':
-                        _x = 0;
+                        _x = vga::x(0);
                         break;
                     case '\b':
-                        if (_x > 0)
+                        if (_x > vga::x(0))
                             --_x;
                         else {
-                            _y -= 1;
-                            _x = screen::instance().width() - 1;
+                            --_y;
+                            _x = screen::instance().width() - vga::x(1);
                         }
                         break;
                     default:
                         screen::instance()[vga::y(_y)][vga::x(_x)] = screen_character(c, _bkgd, _text);
-                        if (_x == screen::instance().width() - 1) {
-                            _x = 0;
+                        if (_x == screen::instance().width() - vga::x(1)) {
+                            _x = vga::x(0);
                             ++_y;
                         } else
                             ++_x;
@@ -69,8 +69,8 @@ namespace foros::vga
             }
 
         private:
-            unsigned int _x;
-            unsigned int _y;
+            vga::x _x;
+            vga::y _y;
             background_color _bkgd{vga::black};
             text_color _text{vga::white};
         };
@@ -78,7 +78,7 @@ namespace foros::vga
 
     static inline details::printer printer(vga::x x, vga::y y) noexcept
     {
-        return details::printer{x.value(), y.value()};
+        return details::printer{x, y};
     }
 }
 

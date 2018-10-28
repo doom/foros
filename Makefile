@@ -16,8 +16,21 @@ CXX_SRC			:=	$(wildcard kernel/src/*.cpp) \
 CXX_OBJ			:=	$(patsubst kernel/src/%.cpp, build/src/%.o, $(CXX_SRC))
 CXX_DEP			:=	$(CXX_OBJ:.o=.d)
 
-CPPFLAGS		=	-Ikernel/include -isystem lib/for_libcxx/include -isystem lib/for_libcxx/lib/for_libc/include -isystem lib/for_libcxx/lib/for_libc/include/$(ARCH)
-CXXFLAGS		=	-Wall -Wextra -nostdinc -nostdlib -fno-builtin -fno-rtti -fno-exceptions -O3 -std=c++17
+LIBCPATH		:=	lib/for_libcxx/lib/for_libc
+LIBCXXPATH		:=	lib/for_libcxx/
+
+CPPFLAGS		=	-isystem $(LIBCPATH)/include -isystem $(LIBCPATH)/include/$(ARCH) -isystem $(LIBCXXPATH)/include
+CPPFLAGS		+=	-Ilib/strong_type/include -Ikernel/include
+CXXFLAGS		=	-Wall -Wextra -nostdinc -nostdlib -fno-builtin -O3 -std=c++17
+CXXFLAGS		+=	-fno-rtti -fno-exceptions \
+				-fno-threadsafe-statics \
+				-mno-sse \
+				-mno-sse2 \
+				-mno-sse3 \
+				-mno-sse4 \
+				-mno-sse4.1 \
+				-mno-sse4.2 \
+				-fno-stack-protector
 
 OBJ			=	$(ASM_OBJ) $(CXX_OBJ)
 
