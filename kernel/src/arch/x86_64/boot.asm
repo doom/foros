@@ -13,10 +13,12 @@ start:
 	call assert_multiboot
 	call assert_cpuid
 	call assert_long_mode
+	call assert_sse
 
 	call setup_page_tables
 	call setup_recursive_mapping
 	call enable_paging
+	call enable_sse
 
 	lgdt [gdt64.pointer]
 
@@ -84,6 +86,34 @@ assert_long_mode:
 .no_long_mode:
 	mov al, '2'
 	jmp fatal_error
+
+; https://en.wikipedia.org/wiki/CPUID
+assert_sse:
+	mov eax, 0x1		; eax=1 for processor information/features
+	cpuid
+	test edx, 1 << 25	; 25th bit is set if SSE is available
+	jz .no_sse
+	test edx, 1 << 26	; 26th bit is set if SSE2 is available
+	jz .no_sse
+	test ecx, 1 << 0	; 0th bit is set if SSE3 is available
+	jz .no_sse
+	ret
+
+.no_sse:
+	mov al, '3'
+	jmp fatal_error
+
+; https://wiki.osdev.org/SSE#Adding_support
+; https://en.wikipedia.org/wiki/Control_register
+enable_sse:
+	mov eax, cr0
+	and ax, 0xFFFB		; clear coprocessor emulation CR0.EM
+	or ax, 0x2		; set coprocessor monitoring  CR0.MP
+	mov cr0, eax
+	mov eax, cr4
+	or ax, 3 << 9		; set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time
+	mov cr4, eax
+	ret
 
 ; The following setup will add a P4, a P3, a P2, and 512 "huge" 2-MB pages, so 2MB * 512 -> 1GB
 ; It is an identity mapping, i.e. virtual addresses with be identical to real addresses

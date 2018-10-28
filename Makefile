@@ -24,9 +24,7 @@ CPPFLAGS		+=	-Ilib/strong_type/include -Ikernel/include
 CXXFLAGS		=	-Wall -Wextra -nostdinc -nostdlib -fno-builtin -O3 -std=c++17
 CXXFLAGS		+=	-fno-rtti -fno-exceptions \
 				-fno-threadsafe-statics \
-				-mno-sse \
-				-mno-sse2 \
-				-mno-sse3 \
+				-mno-ssse3 \
 				-mno-sse4 \
 				-mno-sse4.1 \
 				-mno-sse4.2 \
