@@ -12,15 +12,16 @@ ASM_SRC			=	$(wildcard kernel/src/arch/$(ARCH)/*.asm)
 ASM_OBJ			=	$(patsubst kernel/src/arch/$(ARCH)/%.asm, build/src/arch/$(ARCH)/%.o, $(ASM_SRC))
 
 CXX_SRC			:=	$(wildcard kernel/src/*.cpp) \
-				$(wildcard kernel/src/*/*.cpp)
-CXX_OBJ			:=	$(patsubst kernel/src/%.cpp, build/src/%.o, $(CXX_SRC))
+				$(wildcard kernel/src/*/*.cpp) \
+				$(wildcard kernel/tests/*.cpp)
+CXX_OBJ			:=	$(patsubst kernel/%.cpp, build/%.o, $(CXX_SRC))
 CXX_DEP			:=	$(CXX_OBJ:.o=.d)
 
 LIBCPATH		:=	lib/for_libcxx/lib/for_libc
 LIBCXXPATH		:=	lib/for_libcxx/
 
 CPPFLAGS		=	-isystem $(LIBCPATH)/include -isystem $(LIBCPATH)/include/$(ARCH) -isystem $(LIBCXXPATH)/include
-CPPFLAGS		+=	-Ilib/strong_type/include -Ikernel/include
+CPPFLAGS		+=	-Ilib/strong_type/include -Ikernel/include -I$(LIBCPATH)/lib/ut/include
 CXXFLAGS		=	-Wall -Wextra -nostdinc -nostdlib -fno-builtin -O3 -std=c++17
 CXXFLAGS		+=	-fno-rtti -fno-exceptions \
 				-fno-threadsafe-statics \
@@ -71,7 +72,7 @@ build/src/arch/$(ARCH)/%.o:	kernel/src/arch/$(ARCH)/%.asm
 
 -include $(CXX_DEP)
 
-build/src/%.o:			kernel/src/%.cpp
+build/%.o:			kernel/%.cpp
 				@mkdir -p $(shell dirname $@)
 				@$(ECHO) $(TITLECOLOR)[CC] $(SRCSCOLOR)$<$(NORMAL)
 				@$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@ -MMD -MP
