@@ -97,6 +97,9 @@ namespace foros::vga
         text_color _text;
     };
 
+    /**
+     * Class representing the computer screen as usable through the VGA text buffer
+     */
     class screen : public utils::singleton<screen>
     {
     public:
@@ -139,10 +142,10 @@ namespace foros::vga
             {
             }
 
-            auto operator[](vga::x column) noexcept
+            auto operator[](vga::x x) noexcept
             {
-                kassert(column < _buf.width(), "VGA: out of bounds access on X axis");
-                return screen_slot(_buf.raw()[_line.value() * _buf.width().value() + column.value()]);
+                kassert(x < _buf.width(), "VGA: out of bounds access on X axis");
+                return screen_slot(_buf.raw()[_line.value() * _buf.width().value() + x.value()]);
             }
 
         private:
@@ -150,20 +153,37 @@ namespace foros::vga
             vga::y _line;
         };
 
-        auto operator[](vga::y line) noexcept
+        auto operator[](vga::y y) noexcept
         {
-            kassert(line < height(), "VGA: out of bounds access on Y axis");
-            return screen_line(*this, line);
+            kassert(y < height(), "VGA: out of bounds access on Y axis");
+            return screen_line(*this, y);
         }
 
         void clear(background_color bkgd = background_color(black)) noexcept
         {
+            using namespace vga::literals;
             const auto value = screen_character(' ', bkgd, text_color(white));
 
-            for (vga::y line(0); line < height(); ++line) {
-                for (vga::x col(0); col < width(); ++col) {
-                    (*this)[vga::y(line)][vga::x(col)] = value;
+            for (auto y = 0_y; y < height(); ++y) {
+                for (auto x = 0_x; x < width(); ++x) {
+                    (*this)[y][x] = value;
                 }
+            }
+        }
+
+        void scroll() noexcept
+        {
+            using namespace vga::literals;
+
+            volatile uint16_t *dest = raw();
+            volatile uint16_t *src = dest + width().value();
+            while (src < raw() + width().value() * height().value()) {
+                *dest++ = *src++;
+            }
+
+            constexpr auto value = screen_character(' ', background_color(black), text_color(white));
+            for (auto x = 0_x; x < width(); ++x) {
+                (*this)[height() - 1_y][x] = value;
             }
         }
     };

@@ -1,9 +1,9 @@
 /*
-** Created by doom on 11/10/18.
+** Created by doom on 02/11/18.
 */
 
-#ifndef FOROS_VGA_PRINTER_HPP
-#define FOROS_VGA_PRINTER_HPP
+#ifndef FOROS_SCROLLING_PRINTER_HPP
+#define FOROS_SCROLLING_PRINTER_HPP
 
 #include <vga/details/printer_base.hpp>
 
@@ -12,21 +12,33 @@ namespace foros::vga
     namespace details
     {
         /**
-         * Basic printer class
+         * Printer providing automatic scrolling
          *
-         * This class is meant to be used to create "one-shot" printers with a custom cursor position.
+         * When it reaches the lower end of the screen, all visible content is pushed up in order
+         * to make room for a new empty line.
+         *
+         * This printer is a shared instance meant to be used to print streams of text without
+         * having to manage cursor positions.
          */
-        class printer : public printer_base<printer>
+        class scrolling_printer : public details::printer_base<scrolling_printer>,
+                                  public utils::singleton<scrolling_printer>
         {
-        public:
-            using printer_base<printer>::printer_base;
-
         private:
-            friend printer_base<printer>;
+            friend utils::singleton<scrolling_printer>;
+            friend printer_base<scrolling_printer>;
+
+            constexpr scrolling_printer() noexcept : printer_base(vga::x(0), vga::y(0))
+            {
+            }
 
             void _write_char(char c) noexcept
             {
                 using namespace vga::literals;
+
+                if (_y == screen::instance().height()) {
+                    screen::instance().scroll();
+                    --_y;
+                }
 
                 switch (c) {
                     case '\n':
@@ -47,7 +59,6 @@ namespace foros::vga
                     default:
                         screen::instance()[_y][_x] = screen_character(c, _bkgd, _text);
                         if (_x == screen::instance().width() - 1_x) {
-                            _x = 0_x;
                             ++_y;
                         } else
                             ++_x;
@@ -57,10 +68,10 @@ namespace foros::vga
         };
     }
 
-    static inline details::printer printer(vga::x x, vga::y y) noexcept
+    static inline details::scrolling_printer &scrolling_printer() noexcept
     {
-        return details::printer{x, y};
+        return details::scrolling_printer::instance();
     }
 }
 
-#endif /* !FOROS_VGA_PRINTER_HPP */
+#endif /* !FOROS_SCROLLING_PRINTER_HPP */

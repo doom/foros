@@ -7,5 +7,6 @@
 
 #include <vga/screen.hpp>
 #include <vga/printer.hpp>
+#include <vga/scrolling_printer.hpp>
 
 #endif /* !FOROS_VGA_HPP */

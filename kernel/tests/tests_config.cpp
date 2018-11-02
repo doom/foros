@@ -9,13 +9,12 @@ using namespace foros;
 
 int vga_printf_impl(const char *fmt, ...)
 {
-    static auto printer = vga::printer(vga::x(0), vga::y(0));
     char buf[512];
     va_list ap;
 
     va_start(ap, fmt);
     int ret = vsnprintf(buf, sizeof(buf), fmt, ap);
-    printer << buf;
+    vga::scrolling_printer() << buf;
     va_end(ap);
     return ret;
 }
