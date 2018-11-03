@@ -70,8 +70,10 @@ namespace foros::vga::details
             return *this;
         }
 
-        printer_base &operator<<(void *ptr) noexcept
+        template <typename T, typename = std::enable_if_t<!std::is_same_v<char, std::remove_cv_t<T>>>>
+        printer_base &operator<<(T *ptr) noexcept
         {
+            *this << "0x";
             _write_number((uintptr_t)ptr, 16);
             return *this;
         }
