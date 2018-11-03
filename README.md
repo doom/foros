@@ -41,3 +41,4 @@ Debug:
 - [x] GDT setup
 - [x] Switch to long mode
 - [x] VGA text buffer abstraction
+- [x] IDT setup / Exceptions handling

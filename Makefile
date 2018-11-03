@@ -29,6 +29,7 @@ CXXFLAGS		+=	-fno-rtti -fno-exceptions \
 				-mno-sse4 \
 				-mno-sse4.1 \
 				-mno-sse4.2 \
+				-mno-red-zone \
 				-fno-stack-protector
 
 OBJ			=	$(ASM_OBJ) $(CXX_OBJ)

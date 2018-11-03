@@ -11,9 +11,8 @@ namespace foros
     {
         using namespace vga::literals;
 
-        auto printer = vga::printer(0_x, 0_y);
-        printer << "[" << vga::text_color(vga::red) << "PANIC" << vga::text_color(vga::white) << "] ";
-        printer << reason;
+        vga::scrolling_printer() << "[" << vga::text_color(vga::red) << "PANIC" << vga::text_color(vga::white) << "] ";
+        vga::scrolling_printer() << reason;
         while (1) {
         }
     }
