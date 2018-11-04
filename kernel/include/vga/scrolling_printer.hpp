@@ -59,6 +59,7 @@ namespace foros::vga
                     default:
                         screen::instance()[_y][_x] = screen_character(c, _bkgd, _text);
                         if (_x == screen::instance().width() - 1_x) {
+                            _x = 0_x;
                             ++_y;
                         } else
                             ++_x;
