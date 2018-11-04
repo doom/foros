@@ -14,7 +14,7 @@ namespace foros
 #define kassert(cond, reason)                                               \
     do {                                                                    \
         if unlikely(!(cond))                                                \
-            panic(reason);                                                 \
+            ::foros::panic(reason);                                         \
     } while (0);
 }
 
