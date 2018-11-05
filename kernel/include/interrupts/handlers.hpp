@@ -12,7 +12,7 @@ extern "C" void handle_division_by_zero(const foros::exception_stack_frame *);
 extern "C" void handle_breakpoint(const foros::exception_stack_frame *);
 extern "C" void handle_invalid_opcode(const foros::exception_stack_frame *);
 extern "C" void handle_double_fault(const foros::exception_stack_frame *, uint64_t);
-extern "C" void handle_page_fault(const foros::exception_stack_frame *, foros::page_fault_error_code);
+extern "C" void handle_page_fault(const foros::exception_stack_frame *, uint64_t);
 
 namespace foros
 {

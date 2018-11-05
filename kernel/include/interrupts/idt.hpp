@@ -97,7 +97,7 @@ namespace foros
     using breakpoint_handler_t = st::type<void (*)(const exception_stack_frame *), breakpoint>;
     using invalid_opcode_handler_t = st::type<void (*)(const exception_stack_frame *), invalid_opcode>;
     using double_fault_handler_t = st::type<void (*)(const exception_stack_frame *, uint64_t), double_fault>;
-    using page_fault_handler_t = st::type<void (*)(const exception_stack_frame *, page_fault_error_code), page_fault>;
+    using page_fault_handler_t = st::type<void (*)(const exception_stack_frame *, uint64_t), page_fault>;
 
     struct idt : public utils::singleton<idt>
     {

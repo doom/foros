@@ -1,5 +1,8 @@
 include mk/common.mk
 
+USE_SSE			?=	no
+USE_BUILTIN_INTERRUPT	?=	yes
+
 ARCH			?=	x86_64
 
 KERNEL			:=	build/foros-$(ARCH).bin
@@ -22,6 +25,7 @@ LIBCXXPATH		:=	lib/for_libcxx/
 
 CPPFLAGS		=	-isystem $(LIBCPATH)/include -isystem $(LIBCPATH)/include/$(ARCH) -isystem $(LIBCXXPATH)/include
 CPPFLAGS		+=	-Ilib/strong_type/include -Ikernel/include -I$(LIBCPATH)/lib/ut/include
+
 CXXFLAGS		=	-Wall -Wextra -nostdinc -nostdlib -fno-builtin -O3 -std=c++17
 CXXFLAGS		+=	-fno-rtti -fno-exceptions \
 				-fno-threadsafe-statics \
@@ -31,6 +35,17 @@ CXXFLAGS		+=	-fno-rtti -fno-exceptions \
 				-mno-sse4.2 \
 				-mno-red-zone \
 				-fno-stack-protector
+
+ifneq ($(USE_SSE),yes)
+CXXFLAGS		+=	-mno-sse \
+				-mno-sse2 \
+				-mno-sse3
+endif
+
+ifeq ($(USE_BUILTIN_INTERRUPT),yes)
+CXXFLAGS		+=	-mgeneral-regs-only
+CPPFLAGS		+=	-DFOROS_USE_BUILTIN_INTERRUPT
+endif
 
 OBJ			=	$(ASM_OBJ) $(CXX_OBJ)
 

@@ -18,6 +18,29 @@
  * TODO: see if __attribute__((interrupt)) would have been better here
  */
 
+#ifdef FOROS_USE_BUILTIN_INTERRUPT
+#define define_handler(name)                                                                        \
+    extern "C" void name##_next(const foros::exception_stack_frame *esf);                           \
+                                                                                                    \
+    extern "C" __attribute__((interrupt)) void name(const foros::exception_stack_frame *esf)        \
+    {                                                                                               \
+        name##_next(esf);                                                                           \
+    }                                                                                               \
+                                                                                                    \
+    extern "C" void name##_next
+
+#define define_handler_with_error_code(name)                                                        \
+    extern "C" void name##_next(const foros::exception_stack_frame *esf, uint64_t err_code);        \
+                                                                                                    \
+    extern "C" __attribute__((interrupt)) void name(const foros::exception_stack_frame *esf,        \
+                                                    uint64_t err_code)                              \
+    {                                                                                               \
+        name##_next(esf, err_code);                                                                 \
+    }                                                                                               \
+                                                                                                    \
+    extern "C" void name##_next
+
+#else /* FOROS_USE_BUILTIN_INTERRUPT is not defined, define handlers manually */
 #define save_general_registers()                                                                    \
     asm volatile(                                                                                   \
     "push %rax;"                                                                                    \
@@ -87,6 +110,8 @@
     }                                                                                               \
                                                                                                     \
     extern "C" void name##_next
+
+#endif /* !FOROS_USE_BUILTIN_INTERRUPT */
 
 using namespace foros;
 namespace arch = foros::x86_64;
@@ -158,9 +183,10 @@ define_handler_with_error_code(handle_double_fault)(const exception_stack_frame 
     panic("Double fault");
 }
 
-define_handler_with_error_code(handle_page_fault)(const exception_stack_frame *stack_frame,
-                                                  page_fault_error_code error_code)
+define_handler_with_error_code(handle_page_fault)(const exception_stack_frame *stack_frame, uint64_t err_code)
 {
+    const auto error_code = page_fault_error_code(err_code);
+
     vga::scrolling_printer() << "Page fault when accessing address: " << vga::text_color(vga::cyan)
                              << (void *)arch::registers::cr2() << vga::text_color(vga::white) << '\n';
     vga::scrolling_printer() << "error code: " << error_code << '\n';
