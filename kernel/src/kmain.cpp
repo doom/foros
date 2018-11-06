@@ -8,6 +8,7 @@
 #include <interrupts/idt.hpp>
 #include <interrupts/handlers.hpp>
 #include <multiboot2/multiboot2.hpp>
+#include <interrupts/interrupts.hpp>
 
 using namespace foros;
 using namespace vga::literals;
@@ -22,8 +23,14 @@ static void setup_idt() noexcept
     idt::instance().set_handler<invalid_opcode>(invalid_opcode_handler);
     idt::instance().set_handler<double_fault>(double_fault_handler);
     idt::instance().set_handler<page_fault>(page_fault_handler);
+    idt::instance().set_handler<pit_interrupt>(pit_interrupt_handler);
+    idt::instance().set_handler<keyboard_interrupt>(keyboard_interrupt_handler);
     idt::instance().set_default_handler(&handle_any_interrupt);
     idt::instance().load();
+
+    pic_8259::instance().remap();
+
+    enable_maskable_interrupts();
 
     vga::scrolling_printer() << "Done\n";
 }
@@ -75,4 +82,8 @@ extern "C" void kmain(const void *ptr)
     vga::scrolling_printer() << "Arguments: \"" << cmd_line_tag.arguments() << "\"\n";
 
     debug_infos(boot_info);
+
+    while (1) {
+        asm volatile("hlt");
+    }
 }

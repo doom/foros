@@ -6,16 +6,23 @@
 #include <vga/vga.hpp>
 #include <core/panic.hpp>
 #include <interrupts/exceptions.hpp>
+#include <interrupts/pic.hpp>
 
 /**
  * Below are the implementations of default exception handlers.
+ *
+ * Builtin interrupt mode (enabled if FOROS_USE_BUILTIN_INTERRUPT is defined):
+ * We use the builtin interrupt function attribute to handle the work for us.
+ * As a result, the stack is properly aligned, and the pointer to the stack frame (and the
+ * error code if any) are passed directly to our handler wrapper.
+ * All we have to do is call the real handler.
+ *
+ * Manual mode:
  * Since the calling convention for interrupt handlers is different from the default x86_64
  * convention, intermediate naked functions are used to handle the interrupt.
  * These intermediate functions are required in order to ensure the stack is properly aligned
  * and to fetch the exception stack frame and the optional error code and pass them to
  * our real handlers.
- *
- * TODO: see if __attribute__((interrupt)) would have been better here
  */
 
 #ifdef FOROS_USE_BUILTIN_INTERRUPT
@@ -192,6 +199,20 @@ define_handler_with_error_code(handle_page_fault)(const exception_stack_frame *s
     vga::scrolling_printer() << "error code: " << error_code << '\n';
     vga::scrolling_printer() << "stack frame: " << *stack_frame << '\n';
     panic("Page fault detected");
+}
+
+define_handler(handle_pit_interrupt)(const exception_stack_frame *)
+{
+    /** Ignore the timer for now */
+    pic_8259::instance().send_end_of_interrupt(0x20);
+}
+
+define_handler(handle_keyboard_interrupt)(const exception_stack_frame *)
+{
+    pic_8259::instance().send_end_of_interrupt(0x21);
+    constexpr cpu_port<uint8_t> in_port(0x60);
+
+    vga::scrolling_printer() << "Got a key: " << in_port.read_value() << '\n';
 }
 
 define_handler(handle_any_interrupt)(const exception_stack_frame *)

@@ -97,16 +97,20 @@ namespace foros
     using invalid_opcode = std::integral_constant<std::size_t, 6>;
     using double_fault = std::integral_constant<std::size_t, 8>;
     using page_fault = std::integral_constant<std::size_t, 14>;
+    using pit_interrupt = std::integral_constant<std::size_t, 32>;
+    using keyboard_interrupt = std::integral_constant<std::size_t, 33>;
 
     using division_by_zero_handler_t = st::type<void (*)(const exception_stack_frame *), division_by_zero>;
     using breakpoint_handler_t = st::type<void (*)(const exception_stack_frame *), breakpoint>;
     using invalid_opcode_handler_t = st::type<void (*)(const exception_stack_frame *), invalid_opcode>;
     using double_fault_handler_t = st::type<void (*)(const exception_stack_frame *, uint64_t), double_fault>;
     using page_fault_handler_t = st::type<void (*)(const exception_stack_frame *, uint64_t), page_fault>;
+    using pit_interrupt_handler_t = st::type<void (*)(const exception_stack_frame *), pit_interrupt>;
+    using keyboard_interrupt_handler_t = st::type<void (*)(const exception_stack_frame *), keyboard_interrupt>;
 
     struct idt : public utils::singleton<idt>
     {
-        static constexpr const std::size_t nb_entries = 16;
+        static constexpr const std::size_t nb_entries = 48;
 
         idt_entry entries[nb_entries];
 
@@ -138,7 +142,6 @@ namespace foros
 
             for (auto &entry : entries) {
                 if (!entry.entry_options.is_present()) {
-
                     entry.gdt_selector = arch::registers::cs();
                     entry.pointer_low_bits = static_cast<uint16_t>(handler_ptr);
                     entry.pointer_middle_bits = static_cast<uint16_t>(handler_ptr >> 16);
