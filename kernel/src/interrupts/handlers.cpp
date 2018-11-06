@@ -193,3 +193,8 @@ define_handler_with_error_code(handle_page_fault)(const exception_stack_frame *s
     vga::scrolling_printer() << "stack frame: " << *stack_frame << '\n';
     panic("Page fault detected");
 }
+
+define_handler(handle_any_interrupt)(const exception_stack_frame *)
+{
+    panic("Unhandled interrupt");
+}

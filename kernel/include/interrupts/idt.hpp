@@ -44,6 +44,11 @@ namespace foros
             return *this;
         }
 
+        constexpr bool is_present() const noexcept
+        {
+            return value.get_bit<15>();
+        }
+
         constexpr idt_entry_options &disable_interrupts(bool disable = true) noexcept
         {
             if (disable) {
@@ -124,6 +129,26 @@ namespace foros
             entry.entry_options
                 .set_present()
                 .disable_interrupts();
+        }
+
+        void set_default_handler(void (*handler)(const exception_stack_frame *)) noexcept
+        {
+            std::size_t entry_idx = 0;
+            auto handler_ptr = reinterpret_cast<uintptr_t>(handler);
+
+            for (auto &entry : entries) {
+                if (!entry.entry_options.is_present()) {
+
+                    entry.gdt_selector = arch::registers::cs();
+                    entry.pointer_low_bits = static_cast<uint16_t>(handler_ptr);
+                    entry.pointer_middle_bits = static_cast<uint16_t>(handler_ptr >> 16);
+                    entry.pointer_high_bits = static_cast<uint16_t>(handler_ptr >> 32);
+                    entry.entry_options
+                        .set_present()
+                        .disable_interrupts();
+                }
+                ++entry_idx;
+            }
         }
 
         constexpr idt_entry &operator[](std::size_t idx) noexcept

@@ -14,6 +14,8 @@ extern "C" void handle_invalid_opcode(const foros::exception_stack_frame *);
 extern "C" void handle_double_fault(const foros::exception_stack_frame *, uint64_t);
 extern "C" void handle_page_fault(const foros::exception_stack_frame *, uint64_t);
 
+extern "C" void handle_any_interrupt(const foros::exception_stack_frame *);
+
 namespace foros
 {
     inline constexpr division_by_zero_handler_t division_by_zero_handler(&handle_division_by_zero);

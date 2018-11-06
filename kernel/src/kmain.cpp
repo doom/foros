@@ -22,6 +22,7 @@ static void setup_idt() noexcept
     idt::instance().set_handler<invalid_opcode>(invalid_opcode_handler);
     idt::instance().set_handler<double_fault>(double_fault_handler);
     idt::instance().set_handler<page_fault>(page_fault_handler);
+    idt::instance().set_default_handler(&handle_any_interrupt);
     idt::instance().load();
 
     vga::scrolling_printer() << "Done\n";
