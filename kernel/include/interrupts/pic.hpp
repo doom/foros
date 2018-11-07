@@ -145,11 +145,10 @@ namespace foros
 
         void send_end_of_interrupt(uint8_t interrupt_number) noexcept
         {
-            if (_pic1.handles_interrupt(interrupt_number)) {
-                _pic1.send_end_of_interrupt();
-            } else if (_pic2.handles_interrupt(interrupt_number)) {
+            if (_pic2.handles_interrupt(interrupt_number)) {
                 _pic2.send_end_of_interrupt();
             }
+            _pic1.send_end_of_interrupt();
         }
 
     private:
