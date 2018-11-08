@@ -9,19 +9,20 @@
 #include <multiboot2/multiboot2.hpp>
 #include <utils/singleton.hpp>
 #include <core/panic.hpp>
+#include <vga/scrolling_printer.hpp>
 
 int vga_printf_impl(const char *fmt, ...);
 
 #define ut_printf(fmt, ...)         vga_printf_impl(fmt, ##__VA_ARGS__)
 
-#define PRINT_RED
-#define PRINT_GREEN
-#define PRINT_CYAN
-#define PRINT_WHITE
+#define PRINT_RED                   ::foros::vga::text_color(foros::vga::color::red)
+#define PRINT_GREEN                 ::foros::vga::text_color(foros::vga::color::green)
+#define PRINT_CYAN                  ::foros::vga::text_color(foros::vga::color::cyan)
+#define PRINT_WHITE                 ::foros::vga::text_color(foros::vga::color::white)
 
-#define ut_set_color(color)
+#define ut_set_color(color)         ::foros::vga::scrolling_printer() << PRINT_##color
 
-#define ut_on_fail(x)               foros::panic("Tests failed, aborting");
+#define ut_on_fail(x)               ::foros::panic("Tests failed, aborting");
 
 #include <ut_tests.h>
 
