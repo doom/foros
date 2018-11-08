@@ -60,15 +60,13 @@ static void debug_infos(const mb2::boot_information &boot_info) noexcept
                              << ", end: " << kernel_end->end_address() << '\n';
 }
 
-void run_tests();
+void run_tests(const mb2::boot_information &);
 
 extern "C" void kmain(const void *ptr)
 {
     vga::screen::instance().clear(vga::background_color(vga::black));
 
     setup_idt();
-
-    run_tests();
 
     mb2::boot_information boot_info((const std::byte *)ptr);
 
@@ -79,6 +77,8 @@ extern "C" void kmain(const void *ptr)
     vga::scrolling_printer() << "Arguments: \"" << cmd_line_tag.arguments() << "\"\n";
 
     debug_infos(boot_info);
+
+    run_tests(boot_info);
 
     while (1) {
         asm volatile("hlt");
