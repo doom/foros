@@ -38,18 +38,15 @@ static void setup_idt() noexcept
 static void debug_infos(const mb2::boot_information &boot_info) noexcept
 {
     vga::scrolling_printer() << "Mapped memory regions:\n";
-    for (auto it = boot_info.tags_begin<mb2::memory_map_tag>();
-         it != boot_info.tags_end<mb2::memory_map_tag>();
-         ++it) {
-        for (auto area_it = it->memory_areas_begin(); area_it != it->memory_areas_end(); ++area_it) {
-            vga::scrolling_printer() << area_it->start_address() << ", "
-                                     << area_it->end_address() << ", "
-                                     << area_it->size() << '\n';
-        }
+    auto memory_map = boot_info.tag<mb2::memory_map_tag>();
+    for (auto area_it = memory_map.memory_areas_begin(); area_it != memory_map.memory_areas_end(); ++area_it) {
+        vga::scrolling_printer() << area_it->start_address() << ", "
+                                 << area_it->end_address() << ", "
+                                 << area_it->size() << '\n';
     }
 
-    auto elf_sect_it = boot_info.elf_sections_tag().sections_begin();
-    auto elf_sect_end = boot_info.elf_sections_tag().sections_end();
+    auto elf_sect_it = boot_info.tag<mb2::elf_sections_tag>().sections_begin();
+    auto elf_sect_end = boot_info.tag<mb2::elf_sections_tag>().sections_end();
 
     auto kernel_start = std::min_element(elf_sect_it, elf_sect_end, [](const mb2::elf_section &a,
                                                                        const mb2::elf_section &b) {
@@ -75,10 +72,10 @@ extern "C" void kmain(const void *ptr)
 
     mb2::boot_information boot_info((const std::byte *)ptr);
 
-    auto boot_loader_name_tag = boot_info.boot_loader_name_tag();
+    auto boot_loader_name_tag = boot_info.tag<mb2::boot_loader_name_tag>();
     vga::scrolling_printer() << "Bootloader: " << boot_loader_name_tag.name() << '\n';
 
-    auto cmd_line_tag = boot_info.command_line_tag();
+    auto cmd_line_tag = boot_info.tag<mb2::command_line_tag>();
     vga::scrolling_printer() << "Arguments: \"" << cmd_line_tag.arguments() << "\"\n";
 
     debug_infos(boot_info);

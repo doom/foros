@@ -182,28 +182,13 @@ namespace multiboot2
             return typed_tag_iterator<T>(tags_end());
         }
 
-        auto elf_sections_tag() const noexcept
+        template <typename Tag>
+        auto tag() const noexcept
         {
-            auto elf_it = tags_begin<multiboot2::elf_sections_tag>();
+            auto tag_it = tags_begin<Tag>();
 
-            kassert(elf_it != tags_end<multiboot2::elf_sections_tag>(), "multiboot: No ELF sections tag found");
-            return *elf_it;
-        }
-
-        auto command_line_tag() const noexcept
-        {
-            auto cmd_it = tags_begin<multiboot2::command_line_tag>();
-
-            kassert(cmd_it != tags_end<multiboot2::command_line_tag>(), "multiboot: No command line tag found");
-            return *cmd_it;
-        }
-
-        auto boot_loader_name_tag() const noexcept
-        {
-            auto bln_it = tags_begin<multiboot2::boot_loader_name_tag>();
-
-            kassert(bln_it != tags_end<multiboot2::boot_loader_name_tag>(), "multiboot: No boot loader name tag found");
-            return *bln_it;
+            kassert(tag_it != tags_end<Tag>(), "boot_information::tag: unable to find the requested tag");
+            return *tag_it;
         }
 
     private:
