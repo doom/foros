@@ -108,6 +108,16 @@ namespace foros::x86_64::instructions
         "cli"
         );
     }
+
+    inline void invlpg(uintptr_t addr) noexcept
+    {
+        asm volatile(
+        "invlpg (%0)"
+        : /* no output registers */
+        : "r"(addr)
+        : "memory"
+        );
+    }
 }
 
 #endif /* !FOROS_X86_64_INSTRUCTIONS_HPP */
