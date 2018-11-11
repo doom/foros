@@ -43,9 +43,61 @@ ut_test(and_then)
     ut_assert_eq(*res3, 246);
 }
 
+ut_test(reference)
+{
+    int i = 2;
+    utils::optional<int &> opt(i);
+
+    ut_assert_eq(*opt, i);
+    ++i;
+    ut_assert_eq(*opt, i);
+    --*opt;
+    ut_assert_eq(*opt, i);
+    i = 0;
+    ut_assert_eq(*opt, i);
+
+    int j = 3;
+    opt = j;
+    ut_assert_eq(*opt, j);
+    ++j;
+    ut_assert_eq(*opt, j);
+    --*opt;
+    ut_assert_eq(*opt, j);
+
+    utils::optional<int &> opt2(opt);
+    ut_assert_eq(*opt, j);
+    ut_assert_eq(*opt2, j);
+    ++j;
+    ut_assert_eq(*opt, j);
+    ut_assert_eq(*opt2, j);
+    --*opt;
+    ut_assert_eq(*opt, j);
+    ut_assert_eq(*opt2, j);
+
+    utils::optional<int &> opt3;
+    ut_assert_false(opt3);
+    opt3 = opt;
+    ut_assert_eq(*opt, j);
+    ut_assert_eq(*opt3, j);
+    ++j;
+    ut_assert_eq(*opt, j);
+    ut_assert_eq(*opt3, j);
+    --*opt;
+    ut_assert_eq(*opt, j);
+    ut_assert_eq(*opt3, j);
+
+    opt3.and_then([](int &j_ref) {
+        j_ref = 2;
+        return std::nullopt;
+    });
+    ut_assert_eq(j, 2);
+    ut_assert_eq(*opt3, 2);
+}
+
 ut_group(optional,
          ut_get_test(map),
-         ut_get_test(and_then)
+         ut_get_test(and_then),
+         ut_get_test(reference)
 );
 
 void run_optional_tests()
