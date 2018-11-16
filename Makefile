@@ -23,7 +23,7 @@ CXX_DEP			:=	$(CXX_OBJ:.o=.d)
 LIBCPATH		:=	lib/for_libcxx/lib/for_libc
 LIBCXXPATH		:=	lib/for_libcxx/
 
-CPPFLAGS		=	-isystem $(LIBCPATH)/include -isystem $(LIBCPATH)/include/$(ARCH) -isystem $(LIBCXXPATH)/include
+CPPFLAGS		=	-isystem $(LIBCPATH)/include -isystem $(LIBCPATH)/include/$(ARCH) -isystem $(LIBCXXPATH)/include -DFOR_LIBCXX_NO_EXCEPTIONS
 CPPFLAGS		+=	-Ilib/strong_type/include -Ikernel/include -I$(LIBCPATH)/lib/ut/include
 
 CXXFLAGS		=	-Wall -Wextra -nostdinc -nostdlib -fno-builtin -O3 -std=c++17
