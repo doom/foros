@@ -130,13 +130,6 @@ namespace multiboot2
         tag_iterator _it;
     };
 
-    struct elf_sections_tag_type
-    {
-        static constexpr const auto value = MULTIBOOT_TAG_TYPE_MMAP;
-        using raw_type = multiboot_tag_elf_sections;
-        using value_type = void;
-    };
-
     class boot_information
     {
     public:
