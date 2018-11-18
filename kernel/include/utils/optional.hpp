@@ -14,8 +14,12 @@ namespace utils
     template <typename T>
     class optional : public std::optional<T>
     {
+    protected:
+        using parent = std::optional<T>;
+
     public:
         using std::optional<T>::optional;
+        using value_type = typename parent::value_type;
 
         constexpr optional(std::nullopt_t) noexcept : std::optional<T>::optional(std::nullopt)
         {
@@ -35,6 +39,15 @@ namespace utils
         {
             if (this->has_value()) {
                 return utils::optional<U>(f(*std::move(*this)));
+            }
+            return std::nullopt;
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func, T &>>
+        utils::optional<U> map(Func &&f) &
+        {
+            if (this->has_value()) {
+                return utils::optional<U>(f(**this));
             }
             return std::nullopt;
         }
@@ -83,13 +96,52 @@ namespace utils
             }
             return std::nullopt;
         }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) &&
+        {
+            if (this->has_value()) {
+                return std::move(*this);
+            }
+            return f();
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) const &&
+        {
+            if (this->has_value()) {
+                return std::move(*this);
+            }
+            return f();
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) &
+        {
+            if (this->has_value()) {
+                return *this;
+            }
+            return f();
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) const &
+        {
+            if (this->has_value()) {
+                return *this;
+            }
+            return f();
+        }
     };
 
     template <typename T>
     class optional<T &> : protected std::optional<T *>
     {
-    public:
+    protected:
         using parent = std::optional<T *>;
+
+    public:
+        using value_type = T &;
 
         constexpr optional() : parent()
         {
@@ -190,6 +242,15 @@ namespace utils
             return std::nullopt;
         }
 
+        template <typename Func, typename U = std::invoke_result_t<Func, T &>>
+        utils::optional<U> map(Func &&f) &
+        {
+            if (this->has_value()) {
+                return utils::optional<U>(f(**this));
+            }
+            return std::nullopt;
+        }
+
         template <typename Func, typename U = std::invoke_result_t<Func, const T &>>
         utils::optional<U> map(Func &&f) const &
         {
@@ -233,6 +294,42 @@ namespace utils
                 return std::invoke(std::forward<Func>(f), **this);
             }
             return std::nullopt;
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) &&
+        {
+            if (this->has_value()) {
+                return std::move(*this);
+            }
+            return f();
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) const &&
+        {
+            if (this->has_value()) {
+                return std::move(*this);
+            }
+            return f();
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) &
+        {
+            if (this->has_value()) {
+                return *this;
+            }
+            return f();
+        }
+
+        template <typename Func, typename U = std::invoke_result_t<Func>>
+        U or_else(Func &&f) const &
+        {
+            if (this->has_value()) {
+                return *this;
+            }
+            return f();
         }
     };
 }

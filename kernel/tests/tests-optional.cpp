@@ -86,9 +86,9 @@ ut_test(reference)
     ut_assert_eq(*opt, j);
     ut_assert_eq(*opt3, j);
 
-    opt3.and_then([](int &j_ref) {
+    opt3.map([](int &j_ref) -> int & {
         j_ref = 2;
-        return std::nullopt;
+        return j_ref;
     });
     ut_assert_eq(j, 2);
     ut_assert_eq(*opt3, 2);
