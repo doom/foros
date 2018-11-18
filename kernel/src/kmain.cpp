@@ -37,6 +37,12 @@ static void setup_idt() noexcept
 
 static void debug_infos(const mb2::boot_information &boot_info) noexcept
 {
+    auto boot_loader_name_tag = boot_info.tag<mb2::boot_loader_name_tag>();
+    vga::scrolling_printer() << "Bootloader: " << boot_loader_name_tag.name() << '\n';
+
+    auto cmd_line_tag = boot_info.tag<mb2::command_line_tag>();
+    vga::scrolling_printer() << "Arguments: \"" << cmd_line_tag.arguments() << "\"\n";
+
     vga::scrolling_printer() << "Mapped memory regions:\n";
     auto memory_map = boot_info.tag<mb2::memory_map_tag>();
     for (auto area_it = memory_map.memory_areas_begin(); area_it != memory_map.memory_areas_end(); ++area_it) {
@@ -69,13 +75,6 @@ extern "C" void kmain(const void *ptr)
     setup_idt();
 
     mb2::boot_information boot_info((const std::byte *)ptr);
-
-    auto boot_loader_name_tag = boot_info.tag<mb2::boot_loader_name_tag>();
-    vga::scrolling_printer() << "Bootloader: " << boot_loader_name_tag.name() << '\n';
-
-    auto cmd_line_tag = boot_info.tag<mb2::command_line_tag>();
-    vga::scrolling_printer() << "Arguments: \"" << cmd_line_tag.arguments() << "\"\n";
-
     debug_infos(boot_info);
 
     run_tests(boot_info);
