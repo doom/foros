@@ -9,6 +9,8 @@
 #include <interrupts/handlers.hpp>
 #include <multiboot2/multiboot2.hpp>
 #include <interrupts/interrupts.hpp>
+#include <memory/paging.hpp>
+#include <memory/kernel_heap.hpp>
 
 using namespace foros;
 using namespace vga::literals;
@@ -32,6 +34,15 @@ static void setup_idt() noexcept
 
     enable_maskable_interrupts();
 
+    vga::scrolling_printer() << "Done\n";
+}
+
+static void setup_memory(const mb2::boot_information &boot_info) noexcept
+{
+    vga::scrolling_printer() << "Setting up the kernel heap... ";
+    memory::kernel_heap::instance().initialize(boot_info,
+                                               memory::virtual_address(0x40000000),
+                                               memory::virtual_address(0x40020000));
     vga::scrolling_printer() << "Done\n";
 }
 
@@ -71,11 +82,11 @@ void run_tests(const mb2::boot_information &);
 extern "C" void kmain(const void *ptr)
 {
     vga::screen::instance().clear(vga::background_color(vga::black));
-
-    setup_idt();
-
     mb2::boot_information boot_info((const std::byte *)ptr);
     debug_infos(boot_info);
+
+    setup_idt();
+    setup_memory(boot_info);
 
     run_tests(boot_info);
 
