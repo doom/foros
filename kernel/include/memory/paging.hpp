@@ -61,8 +61,7 @@ namespace foros::memory
 
     struct page :
         public st::type_base<std::size_t>,
-        public st::traits::orderable<page>,
-        public st::traits::addable<page, std::size_t>
+        public st::traits::equality_comparable<page>
     {
         using st::type_base<std::size_t>::type_base;
 
