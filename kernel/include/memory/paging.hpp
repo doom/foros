@@ -244,6 +244,7 @@ namespace foros::memory
              */
             constexpr const page_table_entry &operator[](std::size_t index) const noexcept
             {
+                kassert(index < page_entries_count, "page_table::operator[]: index out of bounds");
                 return entries[index];
             }
 
@@ -256,6 +257,7 @@ namespace foros::memory
              */
             constexpr page_table_entry &operator[](std::size_t index) noexcept
             {
+                kassert(index < page_entries_count, "page_table::operator[]: index out of bounds");
                 return entries[index];
             }
 
