@@ -8,7 +8,6 @@
 #include <climits>
 #include <cstdint>
 #include <st/st.hpp>
-#include <utils/bit_field_trait.hpp>
 #include <utils/optional.hpp>
 #include <arch/x86_64/instructions.hpp>
 #include <memory/definitions.hpp>
