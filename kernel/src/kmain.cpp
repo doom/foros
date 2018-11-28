@@ -4,15 +4,12 @@
 
 #include <string.h>
 #include <type_traits>
-#include <core/halted_loop.hpp>
 #include <vga/vga.hpp>
 #include <interrupts/idt.hpp>
 #include <interrupts/handlers.hpp>
 #include <multiboot2/multiboot2.hpp>
 #include <interrupts/interrupts.hpp>
 #include <memory/kernel_heap.hpp>
-#include <keyboard/key_event_recognizer.hpp>
-#include <keyboard/input_mapper.hpp>
 
 using namespace foros;
 using namespace vga::literals;
@@ -81,6 +78,8 @@ static void debug_infos(const mb2::boot_information &boot_info) noexcept
 
 void run_tests(const mb2::boot_information &);
 
+void fake_init_main();
+
 extern "C" void kmain(const void *ptr)
 {
     vga::screen::instance().clear(vga::background_color(vga::black));
@@ -92,34 +91,5 @@ extern "C" void kmain(const void *ptr)
 
     run_tests(boot_info);
 
-    halted_loop([]() {
-        auto ev_opt = kbd::key_event_recognizer::instance().get_next_event();
-
-        while (ev_opt) {
-            auto[ev_code, ev_state] = *ev_opt;
-
-            switch (ev_code) {
-                case kbd::key_code::enter:
-                    if (ev_state == kbd::key_state::down) {
-                        vga::scrolling_printer() << "\n";
-                    }
-                    break;
-                case kbd::key_code::backspace:
-                    if (ev_state == kbd::key_state::down) {
-                        vga::scrolling_printer() << "\b \b";
-                    }
-                    break;
-                default: {
-                    auto chr_opt = kbd::input_mapper::instance().add_event(*ev_opt);
-
-                    if (chr_opt) {
-
-                        vga::scrolling_printer() << *chr_opt;
-                    }
-                }
-                    break;
-            }
-            ev_opt = kbd::key_event_recognizer::instance().get_next_event();
-        }
-    });
+    fake_init_main();
 }
