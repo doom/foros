@@ -7,6 +7,7 @@
 #include <core/panic.hpp>
 #include <interrupts/exceptions.hpp>
 #include <interrupts/pic.hpp>
+#include <keyboard/key_event_recognizer.hpp>
 
 /**
  * Below are the implementations of default exception handlers.
@@ -212,7 +213,7 @@ define_handler(handle_keyboard_interrupt)(const exception_stack_frame *)
     pic_8259::instance().send_end_of_interrupt(0x21);
     constexpr cpu_port<uint8_t> in_port(0x60);
 
-    vga::scrolling_printer() << "Got a key: " << in_port.read_value() << '\n';
+    kbd::key_event_recognizer::instance().add_byte(in_port.read_value());
 }
 
 define_handler(handle_any_interrupt)(const exception_stack_frame *)
