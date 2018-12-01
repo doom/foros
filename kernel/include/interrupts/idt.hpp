@@ -99,6 +99,7 @@ namespace foros
     using page_fault = std::integral_constant<std::size_t, 14>;
     using pit_interrupt = std::integral_constant<std::size_t, 32>;
     using keyboard_interrupt = std::integral_constant<std::size_t, 33>;
+    using syscall_interrupt = std::integral_constant<std::size_t, 0x80>;
 
     using division_by_zero_handler_t = st::type<void (*)(const exception_stack_frame *), division_by_zero>;
     using breakpoint_handler_t = st::type<void (*)(const exception_stack_frame *), breakpoint>;
@@ -107,10 +108,11 @@ namespace foros
     using page_fault_handler_t = st::type<void (*)(const exception_stack_frame *, uint64_t), page_fault>;
     using pit_interrupt_handler_t = st::type<void (*)(const exception_stack_frame *), pit_interrupt>;
     using keyboard_interrupt_handler_t = st::type<void (*)(const exception_stack_frame *), keyboard_interrupt>;
+    using syscall_interrupt_handler_t = st::type<void (*)(), syscall_interrupt>;
 
     struct idt : public utils::singleton<idt>
     {
-        static constexpr const std::size_t nb_entries = 48;
+        static constexpr const std::size_t nb_entries = 256;
 
         idt_entry entries[nb_entries];
 

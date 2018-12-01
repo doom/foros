@@ -26,6 +26,7 @@ static void setup_idt() noexcept
     idt::instance().set_handler<page_fault>(page_fault_handler);
     idt::instance().set_handler<pit_interrupt>(pit_interrupt_handler);
     idt::instance().set_handler<keyboard_interrupt>(keyboard_interrupt_handler);
+    idt::instance().set_handler<syscall_interrupt>(syscall_interrupt_handler);
     idt::instance().set_default_handler(&handle_any_interrupt);
     idt::instance().load();
 

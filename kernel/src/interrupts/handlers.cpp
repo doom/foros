@@ -8,6 +8,7 @@
 #include <interrupts/exceptions.hpp>
 #include <interrupts/pic.hpp>
 #include <keyboard/key_event_recognizer.hpp>
+#include <stdarg.h>
 
 /**
  * Below are the implementations of default exception handlers.
@@ -25,6 +26,35 @@
  * and to fetch the exception stack frame and the optional error code and pass them to
  * our real handlers.
  */
+
+
+/** Save the general purpose registers (pushes 9 8-bytes registers to the stack) */
+#define save_general_registers()                                                                    \
+    asm volatile(                                                                                   \
+    "push %rax;"                                                                                    \
+    "push %rdi;"                                                                                    \
+    "push %rsi;"                                                                                    \
+    "push %rdx;"                                                                                    \
+    "push %rcx;"                                                                                    \
+    "push %r8;"                                                                                     \
+    "push %r9;"                                                                                     \
+    "push %r10;"                                                                                    \
+    "push %r11;"                                                                                    \
+    );
+
+/** Restore the general purpose registers (pops 9 8-bytes registers to the stack) */
+#define restore_general_registers()                                                                 \
+    asm volatile(                                                                                   \
+    "pop %r11;"                                                                                     \
+    "pop %r10;"                                                                                     \
+    "pop %r9;"                                                                                      \
+    "pop %r8;"                                                                                      \
+    "pop %rcx;"                                                                                     \
+    "pop %rdx;"                                                                                     \
+    "pop %rsi;"                                                                                     \
+    "pop %rdi;"                                                                                     \
+    "pop %rax;"                                                                                     \
+    );
 
 #ifdef FOROS_USE_BUILTIN_INTERRUPT
 #define define_handler(name)                                                                        \
@@ -49,32 +79,6 @@
     extern "C" void name##_next
 
 #else /* FOROS_USE_BUILTIN_INTERRUPT is not defined, define handlers manually */
-#define save_general_registers()                                                                    \
-    asm volatile(                                                                                   \
-    "push %rax;"                                                                                    \
-    "push %rdi;"                                                                                    \
-    "push %rsi;"                                                                                    \
-    "push %rdx;"                                                                                    \
-    "push %rcx;"                                                                                    \
-    "push %r8;"                                                                                     \
-    "push %r9;"                                                                                     \
-    "push %r10;"                                                                                    \
-    "push %r11;"                                                                                    \
-    );
-
-#define restore_general_registers()                                                                 \
-    asm volatile(                                                                                   \
-    "pop %r11;"                                                                                     \
-    "pop %r10;"                                                                                     \
-    "pop %r9;"                                                                                      \
-    "pop %r8;"                                                                                      \
-    "pop %rcx;"                                                                                     \
-    "pop %rdx;"                                                                                     \
-    "pop %rsi;"                                                                                     \
-    "pop %rdi;"                                                                                     \
-    "pop %rax;"                                                                                     \
-    );
-
 #define define_handler(name)                                                                        \
     extern "C" __attribute__((naked)) void name()                                                   \
     {                                                                                               \
@@ -214,6 +218,54 @@ define_handler(handle_keyboard_interrupt)(const exception_stack_frame *)
     constexpr cpu_port<uint8_t> in_port(0x60);
 
     kbd::key_event_recognizer::instance().add_byte(in_port.read_value());
+}
+
+struct syscall_registers
+{
+    uint64_t r9;
+    uint64_t r8;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rsi;
+    uint64_t rdi;
+    uint64_t rax;
+};
+
+extern "C" void handle_syscall(syscall_registers r)
+{
+    if (r.rax == 0) {
+        vga::scrolling_printer() << std::string_view{(const char *)r.rdi, r.rsi};
+    }
+}
+
+// This doesn't use the "interrupt" attribute because we want to control what happens on the stack. Meh.
+extern "C" __attribute__((naked)) void handle_syscall_interrupt()
+{
+    save_general_registers();
+
+    asm volatile(
+    "push %rax;"
+    "push %rdi;"
+    "push %rsi;"
+    "push %rdx;"
+    "push %rcx;"
+    "push %r8;"
+    "push %r9;"
+    "call handle_syscall;"
+    "pop %rdx;"
+    "pop %rdx;"
+    "pop %rdx;"
+    "pop %rdx;"
+    "pop %rdx;"
+    "pop %rdx;"
+    "pop %rdx;"
+    );
+
+    restore_general_registers();
+
+    asm volatile(
+    "iretq;"
+    );
 }
 
 define_handler(handle_any_interrupt)(const exception_stack_frame *)
