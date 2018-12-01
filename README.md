@@ -41,4 +41,9 @@ Debug:
 - [x] GDT setup
 - [x] Switch to long mode
 - [x] VGA text buffer abstraction
-- [x] IDT setup / Exceptions handling
+- [x] IDT setup and interrupts handling
+- [x] Remapping of the 8259 PIC and activation of maskable interrupts
+- [x] Physical memory allocation
+- [x] Virtual-to-physical memory mapping
+- [x] Kernel heap
+- [x] Basic keyboard abstraction (scan codes to key events to characters)
