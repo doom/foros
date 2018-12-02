@@ -170,7 +170,7 @@ namespace foros
 
         void load() noexcept
         {
-            arch::instructions::descriptor_table desc;
+            arch::types::descriptor_table desc;
             desc.limit = sizeof(idt) - 1; //limit is actually the last allowed index
             desc.base_ptr = reinterpret_cast<uintptr_t>(this);
             arch::instructions::lidt(desc);
