@@ -1,7 +1,7 @@
 ENTRY(start)
 
 SECTIONS {
-    . = 1M;
+    . = 1M; /* set the address of the first section at 1M, conventional address to load a kernel */
 
     .boot :
     {
