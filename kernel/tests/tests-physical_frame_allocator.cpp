@@ -23,11 +23,11 @@ ut_test(usage)
         return a.start_address() + a.size() < b.start_address() + b.size();
     });
 
-    auto kern_start = (uintptr_t)kern_start_frame->start_address();
-    auto kern_end = (uintptr_t)kern_end_frame->end_address();
+    auto kern_start = physical_address(kern_start_frame->start_address());
+    auto kern_end = physical_address(kern_end_frame->end_address());
 
-    auto multiboot_start = (uintptr_t)tests_context::instance().boot_information().start_address();
-    auto multiboot_end = (uintptr_t)tests_context::instance().boot_information().end_address();
+    auto multiboot_start = physical_address(tests_context::instance().boot_information().start_address());
+    auto multiboot_end = physical_address(tests_context::instance().boot_information().end_address());
 
     while (auto opt = allocator.allocate_frame()) {
         ut_assert_false(physical_frame::for_address(kern_start) < *opt

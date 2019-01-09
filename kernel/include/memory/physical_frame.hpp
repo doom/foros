@@ -24,14 +24,14 @@ namespace foros::memory
     {
         using st::type_base<std::size_t>::type_base;
 
-        static physical_frame for_address(uintptr_t addr) noexcept
+        static physical_frame for_address(physical_address addr) noexcept
         {
-            return physical_frame(addr / page_size);
+            return physical_frame(addr.value() / page_size);
         }
 
-        uintptr_t start_address() const noexcept
+        physical_address start_address() const noexcept
         {
-            return page_size * value();
+            return physical_address(page_size * value());
         }
     };
 
@@ -46,8 +46,8 @@ namespace foros::memory
     {
     protected:
         physical_frame_allocator(mb2::memory_area_iterator begin_it, mb2::memory_area_iterator end_it,
-                                 uintptr_t kernel_start, uintptr_t kernel_end,
-                                 uintptr_t multiboot_start, uintptr_t multiboot_end) noexcept :
+                                 physical_address kernel_start, physical_address kernel_end,
+                                 physical_address multiboot_start, physical_address multiboot_end) noexcept :
             _area_it(begin_it), _area_end_it(end_it),
             _kernel_start(physical_frame::for_address(kernel_start)),
             _kernel_end(physical_frame::for_address(kernel_end)),
@@ -78,10 +78,10 @@ namespace foros::memory
             });
 
             return physical_frame_allocator(memory_map.memory_areas_begin(), memory_map.memory_areas_end(),
-                                            (uintptr_t)kernel_start->start_address(),
-                                            (uintptr_t)kernel_end->end_address(),
-                                            (uintptr_t)boot_info.start_address(),
-                                            (uintptr_t)boot_info.end_address()
+                                            physical_address(kernel_start->start_address()),
+                                            physical_address(kernel_end->end_address()),
+                                            physical_address(boot_info.start_address()),
+                                            physical_address(boot_info.end_address())
             );
         }
 
@@ -91,12 +91,12 @@ namespace foros::memory
             for (auto cur_area_it = _area_it; cur_area_it != _area_end_it; ++cur_area_it) {
                 if (_area_it->start_address() < cur_area_it->start_address()) {
                     /** If the area has not been used yet */
-                    auto start_addr = (uintptr_t)cur_area_it->start_address();
+                    auto start_addr = physical_address(cur_area_it->start_address());
 
                     if (physical_frame::for_address(start_addr) >= _next_frame) {
                         /** If the area comes before the last seen area (we process areas in order, so we want the first) */
                         _area_it = cur_area_it;
-                        _next_frame = physical_frame::for_address((uintptr_t)_area_it->start_address());
+                        _next_frame = physical_frame::for_address(physical_address(_area_it->start_address()));
                     }
                 }
 
@@ -113,8 +113,8 @@ namespace foros::memory
                     return std::nullopt;
 
                 auto candidate_frame = _next_frame;
-                auto ptr_to_last_byte_in_area = _area_it->start_address() + _area_it->size() - 1;
-                auto last_frame_in_current_area = physical_frame::for_address((uintptr_t)ptr_to_last_byte_in_area);
+                auto last_byte_in_area_addr = physical_address(_area_it->start_address() + _area_it->size() - 1);
+                auto last_frame_in_current_area = physical_frame::for_address(last_byte_in_area_addr);
 
                 if (candidate_frame > last_frame_in_current_area) {
                     /**

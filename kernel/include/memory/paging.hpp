@@ -167,7 +167,7 @@ namespace foros::memory
         utils::optional<physical_frame> get_frame() const noexcept
         {
             if (entry_flags().has(flags::present)) {
-                const uintptr_t addr = value() & addr_only_mask;
+                const auto addr = physical_address(value() & addr_only_mask);
 
                 return {physical_frame::for_address(addr)};
             }
@@ -185,7 +185,7 @@ namespace foros::memory
             const flags flags_only_mask = flags::present | flags::writable | flags::user_accessible |
                                           flags::write_through | flags::no_cache | flags::accessed |
                                           flags::dirty | flags::huge_page | flags::global | flags::no_execute;
-            kassert((f.start_address() & ~addr_only_mask) == 0,
+            kassert((f.start_address().value() & ~addr_only_mask) == 0,
                     "page_table_entry::set_frame: invalid address for physical_frame");
             kassert((~flags_only_mask & fl).value() == 0, "page_table_entry::set_frame: invalid flags");
             value() = f.value() | fl.value();
@@ -453,7 +453,7 @@ namespace foros::memory
                                        page_table_entry::flags entry_flags,
                                        physical_frame_allocator &al) noexcept
         {
-            auto page = page::for_address(virtual_address(frame.start_address()));
+            auto page = page::for_address(virtual_address(frame.start_address().value()));
 
             map_page_to_frame(frame, page, entry_flags, al);
         }
