@@ -7,12 +7,13 @@
 
 #include <optional>
 #include <functional>
+#include <core/panic.hpp>
 
 namespace utils
 {
     /** Optional class with functional-style-ish features */
     template <typename T>
-    class optional : public std::optional<T>
+    class optional : private std::optional<T>
     {
     protected:
         using parent = std::optional<T>;
@@ -23,6 +24,53 @@ namespace utils
 
         constexpr optional(std::nullopt_t) noexcept : std::optional<T>::optional(std::nullopt)
         {
+        }
+
+        using parent::operator bool;
+        using parent::has_value;
+
+        constexpr const T &unwrap() const & noexcept
+        {
+            return parent::operator*();
+        }
+
+        constexpr T &unwrap() & noexcept
+        {
+            return parent::operator*();
+        }
+
+        constexpr const T &&unwrap() const && noexcept
+        {
+            return std::move(parent::operator*());
+        }
+
+        constexpr T &&unwrap() && noexcept
+        {
+            return std::move(parent::operator*());
+        }
+
+        constexpr const T &unwrap_or_panic(const char *message) const & noexcept
+        {
+            kassert(has_value(), message);
+            return parent::operator*();
+        }
+
+        constexpr T &unwrap_or_panic(const char *message) & noexcept
+        {
+            kassert(has_value(), message);
+            return parent::operator*();
+        }
+
+        constexpr const T &&unwrap_or_panic(const char *message) const && noexcept
+        {
+            kassert(has_value(), message);
+            return std::move(parent::operator*());
+        }
+
+        constexpr T &&unwrap_or_panic(const char *message) && noexcept
+        {
+            kassert(has_value(), message);
+            return std::move(parent::operator*());
         }
 
         template <typename Func, typename U = std::invoke_result_t<Func, T &&>>
@@ -135,198 +183,115 @@ namespace utils
     };
 
     template <typename T>
-    class optional<T &> : protected std::optional<T *>
+    class optional<T &>
     {
-    protected:
-        using parent = std::optional<T *>;
+    private:
+        T *_ptr;
 
     public:
         using value_type = T &;
 
-        constexpr optional() : parent()
+        constexpr optional() : _ptr(nullptr)
         {
         }
 
-        template <typename ...Args>
-        constexpr optional(T &t) : parent(&t)
+        constexpr optional(T &t) : _ptr(&t)
         {
         }
 
-        constexpr optional(std::nullopt_t) noexcept : parent::optional(std::nullopt)
+        constexpr optional(std::nullopt_t) noexcept : _ptr(nullptr)
         {
         }
 
-        using parent::operator bool;
-
-        constexpr const T &operator*() const & noexcept
+        constexpr bool has_value() const noexcept
         {
-            return *parent::operator*();
+            return _ptr != nullptr;
         }
 
-        constexpr T &operator*() & noexcept
+        constexpr operator bool() const noexcept
         {
-            return *parent::operator*();
+            return has_value();
         }
 
-        constexpr const T &&operator*() const && noexcept
+        constexpr const T &unwrap() const noexcept
         {
-            return std::move(*parent::operator*());
+            return *_ptr;
         }
 
-        constexpr T &&operator*() && noexcept
+        constexpr T &unwrap() noexcept
         {
-            return std::move(*parent::operator*());
+            return *_ptr;
         }
 
-        constexpr const T *operator->() const noexcept
+        constexpr const T &unwrap_or_panic(const char *message) const noexcept
         {
-            return *parent::operator->();
+            kassert(has_value(), message);
+            return *_ptr;
         }
 
-        constexpr T *operator->() noexcept
+        constexpr T &unwrap_or_panic(const char *message) noexcept
         {
-            return *parent::operator->();
-        }
-
-        constexpr const T &value() const &
-        {
-            return *parent::value();
-        }
-
-        constexpr T &value() &
-        {
-            return *parent::value();
-        }
-
-        constexpr const T &&value() const &&
-        {
-            return std::move(*parent::value());
-        }
-
-        constexpr T &&value() &&
-        {
-            return std::move(*parent::value());
+            kassert(has_value(), message);
+            return *_ptr;
         }
 
         template <typename U>
-        constexpr T &value_or(U &&default_value) const &
+        constexpr T &value_or(U &&default_value) const
         {
-            if (parent::has_value())
-                return *parent::operator*();
+            if (has_value())
+                return **this;
             return std::forward<U>(default_value);
-        }
-
-        template <typename U>
-        constexpr T &value_or(U &&default_value) const &&
-        {
-            if (parent::has_value())
-                return std::move(*parent::operator*());
-            return std::forward<U>(default_value);
-        }
-
-        template <typename Func, typename U = std::invoke_result_t<Func, T &&>>
-        utils::optional<U> map(Func &&f) &&
-        {
-            if (this->has_value()) {
-                return utils::optional<U>(f(*std::move(*this)));
-            }
-            return std::nullopt;
-        }
-
-        template <typename Func, typename U = std::invoke_result_t<Func, const T &&>>
-        utils::optional<U> map(Func &&f) const &&
-        {
-            if (this->has_value()) {
-                return utils::optional<U>(f(*std::move(*this)));
-            }
-            return std::nullopt;
         }
 
         template <typename Func, typename U = std::invoke_result_t<Func, T &>>
-        utils::optional<U> map(Func &&f) &
+        utils::optional<U> map(Func &&f)
         {
-            if (this->has_value()) {
-                return utils::optional<U>(f(**this));
+            if (has_value()) {
+                return utils::optional<U>(f(unwrap()));
             }
             return std::nullopt;
         }
 
         template <typename Func, typename U = std::invoke_result_t<Func, const T &>>
-        utils::optional<U> map(Func &&f) const &
+        utils::optional<U> map(Func &&f) const
         {
-            if (this->has_value()) {
+            if (has_value()) {
                 return utils::optional<U>(f(**this));
             }
             return std::nullopt;
         }
 
-        template <typename Func, typename U = std::invoke_result_t<Func, T &&>>
-        U and_then(Func &&f) &&
-        {
-            if (this->has_value()) {
-                return std::invoke(std::forward<Func>(f), *std::move(*this));
-            }
-            return std::nullopt;
-        }
-
-        template <typename Func, typename U = std::invoke_result_t<Func, const T &&>>
-        U and_then(Func &&f) const &&
-        {
-            if (this->has_value()) {
-                return std::invoke(std::forward<Func>(f), *std::move(*this));
-            }
-            return std::nullopt;
-        }
-
         template <typename Func, typename U = std::invoke_result_t<Func, T &>>
-        U and_then(Func &&f) &
+        U and_then(Func &&f)
         {
-            if (this->has_value()) {
-                return std::invoke(std::forward<Func>(f), **this);
+            if (has_value()) {
+                return std::invoke(std::forward<Func>(f), unwrap());
             }
             return std::nullopt;
         }
 
         template <typename Func, typename U = std::invoke_result_t<Func, const T &>>
-        U and_then(Func &&f) const &
+        U and_then(Func &&f) const
         {
-            if (this->has_value()) {
-                return std::invoke(std::forward<Func>(f), **this);
+            if (has_value()) {
+                return std::invoke(std::forward<Func>(f), unwrap());
             }
             return std::nullopt;
         }
 
         template <typename Func, typename U = std::invoke_result_t<Func>>
-        U or_else(Func &&f) &&
+        U or_else(Func &&f)
         {
-            if (this->has_value()) {
-                return std::move(*this);
-            }
-            return f();
-        }
-
-        template <typename Func, typename U = std::invoke_result_t<Func>>
-        U or_else(Func &&f) const &&
-        {
-            if (this->has_value()) {
-                return std::move(*this);
-            }
-            return f();
-        }
-
-        template <typename Func, typename U = std::invoke_result_t<Func>>
-        U or_else(Func &&f) &
-        {
-            if (this->has_value()) {
+            if (has_value()) {
                 return *this;
             }
             return f();
         }
 
         template <typename Func, typename U = std::invoke_result_t<Func>>
-        U or_else(Func &&f) const &
+        U or_else(Func &&f) const
         {
-            if (this->has_value()) {
+            if (has_value()) {
                 return *this;
             }
             return f();

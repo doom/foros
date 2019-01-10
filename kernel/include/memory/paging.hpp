@@ -333,16 +333,16 @@ namespace foros::memory
             auto next_opt = next_table(index);
 
             if (next_opt) {
-                return *next_opt;
+                return next_opt.unwrap();
             }
             kassert(!entries[index].entry_flags().has(page_table_entry::flags::huge_page),
                     "page_table::allocate_next_table: huge pages are not supported");
-            auto frame = al.allocate_frame();
-            kassert(frame, "page_table::allocate_next_table: unable to allocate a physical_frame");
-            entries[index].set_frame(*frame, page_table_entry::flags::present | page_table_entry::flags::writable);
-            auto next = next_table(index);
-            next->clear();
-            return *next;
+            auto frame = al.allocate_frame()
+                .unwrap_or_panic("page_table::allocate_next_table: unable to allocate a physical_frame");
+            entries[index].set_frame(frame, page_table_entry::flags::present | page_table_entry::flags::writable);
+            auto &next = next_table(index).unwrap();
+            next.clear();
+            return next;
         }
     };
 
@@ -423,7 +423,7 @@ namespace foros::memory
             auto &p2 = p3.allocate_next_table(p.p3_index(), al);
             auto &p1 = p2.allocate_next_table(p.p2_index(), al);
 
-            kassert(p1[p.p1_index()].is_unused(), "map_page_to_frame: page already in use");
+            kassert(p1[p.p1_index()].is_unused(), "mapper::map_page_to_frame: page already in use");
             p1[p.p1_index()].set_frame(frame, entry_flags | page_table_entry::flags::present);
         }
 
@@ -437,9 +437,9 @@ namespace foros::memory
         static void map_page(page p, page_table_entry::flags entry_flags,
                              physical_frame_allocator &al) noexcept
         {
-            auto frame_opt = al.allocate_frame();
+            auto frame = al.allocate_frame().unwrap_or_panic("mapper::map_page: unable to allocate a physical frame");
 
-            map_page_to_frame(*frame_opt, p, entry_flags, al);
+            map_page_to_frame(frame, p, entry_flags, al);
         }
 
         /**
@@ -474,10 +474,10 @@ namespace foros::memory
             }).and_then([&p](auto &&p2) {
                 return p2.next_table(p.p2_index());
             });
-            kassert(p1opt, "memory::manager::unmap: attempted to unmap an already unmapped frame");
 
-            auto frame = *(*p1opt)[p.p1_index()].get_frame();
-            (*p1opt)[p.p1_index()].set_unused();
+            auto &p1 = p1opt.unwrap_or_panic("mapper::unmap: attempted to unmap an already unmapped frame");
+            auto frame = p1[p.p1_index()].get_frame().unwrap();
+            p1[p.p1_index()].set_unused();
             al.deallocate_frame(frame);
             arch::instructions::invlpg(p.start_address().value());
         }

@@ -18,7 +18,7 @@ ut_test(map)
     o = 123;
     auto res2 = o.map(mult2);
     ut_assert(res2.has_value());
-    ut_assert_eq(*res2, 246);
+    ut_assert_eq(res2.unwrap(), 246);
 }
 
 ut_test(and_then)
@@ -40,7 +40,7 @@ ut_test(and_then)
     o = 123;
     auto res3 = o.and_then(mult2_if_odd);
     ut_assert(res3.has_value());
-    ut_assert_eq(*res3, 246);
+    ut_assert_eq(res3.unwrap(), 246);
 }
 
 ut_test(reference)
@@ -48,50 +48,50 @@ ut_test(reference)
     int i = 2;
     utils::optional<int &> opt(i);
 
-    ut_assert_eq(*opt, i);
+    ut_assert_eq(opt.unwrap(), i);
     ++i;
-    ut_assert_eq(*opt, i);
-    --*opt;
-    ut_assert_eq(*opt, i);
+    ut_assert_eq(opt.unwrap(), i);
+    --opt.unwrap();
+    ut_assert_eq(opt.unwrap(), i);
     i = 0;
-    ut_assert_eq(*opt, i);
+    ut_assert_eq(opt.unwrap(), i);
 
     int j = 3;
     opt = j;
-    ut_assert_eq(*opt, j);
+    ut_assert_eq(opt.unwrap(), j);
     ++j;
-    ut_assert_eq(*opt, j);
-    --*opt;
-    ut_assert_eq(*opt, j);
+    ut_assert_eq(opt.unwrap(), j);
+    --opt.unwrap();
+    ut_assert_eq(opt.unwrap(), j);
 
     utils::optional<int &> opt2(opt);
-    ut_assert_eq(*opt, j);
-    ut_assert_eq(*opt2, j);
+    ut_assert_eq(opt.unwrap(), j);
+    ut_assert_eq(opt2.unwrap(), j);
     ++j;
-    ut_assert_eq(*opt, j);
-    ut_assert_eq(*opt2, j);
-    --*opt;
-    ut_assert_eq(*opt, j);
-    ut_assert_eq(*opt2, j);
+    ut_assert_eq(opt.unwrap(), j);
+    ut_assert_eq(opt2.unwrap(), j);
+    --opt.unwrap();
+    ut_assert_eq(opt.unwrap(), j);
+    ut_assert_eq(opt2.unwrap(), j);
 
     utils::optional<int &> opt3;
     ut_assert_false(opt3);
     opt3 = opt;
-    ut_assert_eq(*opt, j);
-    ut_assert_eq(*opt3, j);
+    ut_assert_eq(opt.unwrap(), j);
+    ut_assert_eq(opt3.unwrap(), j);
     ++j;
-    ut_assert_eq(*opt, j);
-    ut_assert_eq(*opt3, j);
-    --*opt;
-    ut_assert_eq(*opt, j);
-    ut_assert_eq(*opt3, j);
+    ut_assert_eq(opt.unwrap(), j);
+    ut_assert_eq(opt3.unwrap(), j);
+    --opt.unwrap();
+    ut_assert_eq(opt.unwrap(), j);
+    ut_assert_eq(opt3.unwrap(), j);
 
     opt3.map([](int &j_ref) -> int & {
         j_ref = 2;
         return j_ref;
     });
     ut_assert_eq(j, 2);
-    ut_assert_eq(*opt3, 2);
+    ut_assert_eq(opt3.unwrap(), 2);
 }
 
 ut_group(optional,

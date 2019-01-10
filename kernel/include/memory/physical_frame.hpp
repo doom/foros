@@ -7,8 +7,8 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <st/st.hpp>
+#include <utils/optional.hpp>
 #include <multiboot2/multiboot2.hpp>
 #include <memory/definitions.hpp>
 
@@ -105,7 +105,7 @@ namespace foros::memory
         }
 
     public:
-        std::optional<physical_frame> allocate_frame() noexcept
+        utils::optional<physical_frame> allocate_frame() noexcept
         {
             while (true) {
                 /** Return nullopt if we cannot find any area to allocate from */

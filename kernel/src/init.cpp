@@ -69,7 +69,7 @@ void fake_init_main()
         auto ev_opt = kbd::key_event_recognizer::instance().get_next_event();
 
         while (ev_opt) {
-            auto[ev_code, ev_state] = *ev_opt;
+            auto[ev_code, ev_state] = ev_opt.unwrap();
 
             switch (ev_code) {
                 case kbd::key_code::enter:
@@ -83,11 +83,10 @@ void fake_init_main()
                     }
                     break;
                 default: {
-                    auto chr_opt = kbd::input_mapper::instance().add_event(*ev_opt);
+                    auto chr_opt = kbd::input_mapper::instance().add_event(ev_opt.unwrap());
 
                     if (chr_opt) {
-
-                        vga::scrolling_printer() << *chr_opt;
+                        vga::scrolling_printer() << chr_opt.unwrap();
                     }
                     break;
                 }

@@ -30,10 +30,10 @@ ut_test(usage)
     auto multiboot_end = physical_address(tests_context::instance().boot_information().end_address());
 
     while (auto opt = allocator.allocate_frame()) {
-        ut_assert_false(physical_frame::for_address(kern_start) < *opt
-                        && *opt < physical_frame::for_address(kern_end));
-        ut_assert_false(physical_frame::for_address(multiboot_start) < *opt
-                        && *opt < physical_frame::for_address(multiboot_end));
+        ut_assert_false(physical_frame::for_address(kern_start) < opt.unwrap()
+                        && opt.unwrap() < physical_frame::for_address(kern_end));
+        ut_assert_false(physical_frame::for_address(multiboot_start) < opt.unwrap()
+                        && opt.unwrap() < physical_frame::for_address(multiboot_end));
     }
 }
 
