@@ -53,6 +53,7 @@ namespace multiboot2
         using reference = value_type;
         using pointer = utils::pointer_like<memory_area>;
         using iterator_category = std::input_iterator_tag;
+        using difference_type = std::ptrdiff_t;
 
         constexpr memory_area_iterator() noexcept : _entry(nullptr), _end_area(nullptr), _entry_size(0)
         {

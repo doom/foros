@@ -53,6 +53,7 @@ namespace multiboot2
         using reference = value_type;
         using pointer = utils::pointer_like<elf_section>;
         using iterator_category = std::input_iterator_tag;
+        using difference_type = std::ptrdiff_t;
 
         constexpr elf_sections_iterator() noexcept : _sect(nullptr), _str_sect(nullptr), _nb_sections(0), _entry_size(0)
         {
