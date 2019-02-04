@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <meta/utils/enum_bitwise_ops.hpp>
 #include <multiboot2/details/multiboot2.h>
 
 namespace multiboot2::details
@@ -88,5 +89,7 @@ namespace multiboot2::details
         return reinterpret_cast<const elf_section_header_raw *>(ptr);
     }
 }
+
+ENABLE_BITWISE_OPS_FOR(multiboot2::details::memory_area_type_raw);
 
 #endif /* !FOROS_MULTIBOOT2_RAW_TYPES_HPP */

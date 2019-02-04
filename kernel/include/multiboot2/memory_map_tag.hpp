@@ -42,6 +42,21 @@ namespace multiboot2
             return static_cast<memory_type>(_entry->type);
         }
 
+        bool is_available() const noexcept
+        {
+            return static_cast<int>(type() & memory_type::memory_available) != 0;
+        }
+
+        bool is_reserved() const noexcept
+        {
+            return static_cast<int>(type() & memory_type::reserved) != 0;
+        }
+
+        bool is_acpi_reclaimable() const noexcept
+        {
+            return static_cast<int>(type() & memory_type::acpi_reclaimable) != 0;
+        }
+
     private:
         const details::memory_map_entry_raw *_entry;
     };
